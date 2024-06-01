@@ -36,11 +36,12 @@ def hello_gcs(cloud_event):
     local_path1 = f"/tmp/{file_name}"
     blob.download_to_filename(local_path1)
 
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(trained_classification_model)
-    blob = bucket.blob(model.keras)
-    local_path = f"/tmp/{model.keras}"
-    blob.download_to_filename(local_path)
+    model_bucket_name = 'trained_classification_model'
+    model_file_name = 'model.keras'
+    bucket2 = storage_client.bucket(model_bucket_name)
+    blob2 = bucket2.blob(model_file_name)
+    local_path2 = f"/tmp/{model_file_name}"
+    blob2.download_to_filename(local_path2)
 
     class_names = ['elephant', 'none', 'peacock', 'wildboar']
     model = keras.models.load_model(local_path)

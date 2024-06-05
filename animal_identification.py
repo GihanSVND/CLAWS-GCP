@@ -6,6 +6,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow import keras
 from google.cloud import storage
+import json
 
 
 # Triggered by a change in a storage bucket
@@ -54,6 +55,11 @@ def hello_gcs(cloud_event):
     detected_animal = class_names[predicted_class_index]
 
     print(detected_animal)
+
+    response_json = {"animal": detected_animal}
+    response_str = json.dumps(response_json)
+
+    return response_str
 
 
 

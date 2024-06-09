@@ -63,16 +63,33 @@ def main(cloud_event):
 
     print(detected_animal)
 
+    with open(local_path1, "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+    url_ard = 'https://your-endpoint-url.com'
+    url_det = 'https://your-endpoint-url.com'
+    url_upd = 'https://your-endpoint-url.com'
+
+    headers = {'Content-Type': 'application/json'}
+
+    data_ard = {
+        "animal": detected_animal
+    }
+
+    data_det = {
+        "animal": detected_animal,
+        "image": encoded_image
+    }
+
+    data_upd = {
+        "image": encoded_image
+    }
+
+    response_ard = requests.post(url_ard, headers=headers, data=json.dumps(data_ard))
+    response_det = requests.post(url_det, headers=headers, data=json.dumps(data_det))
+    response_upd = requests.post(url_upd, headers=headers, data=json.dumps(data_upd))
+
     if detected_animal != "none":
         destination_bucket_name = 'detected-animals'
         destination_bucket = storage_client.bucket(destination_bucket_name)
         new_blob = bucket1.copy_blob(blob1, destination_bucket)
-
-    # Send the detected animal data to the specified endpoint
-    url = 'http://127.0.0.1:5000/endpoint'
-    data = {"animal": detected_animal}
-
-    headers = {'Content-Type': 'application/json'}
-    response = requests.post(url, data=json.dumps(data), headers=headers)
-
-    print(response.status_code, response.reason)

@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 import requests
 import json
+import base64
+import firebase_admin
+from firebase_admin import credentials, db
 
 # Triggered by a change in a storage bucket
 @functions_framework.cloud_event
@@ -47,6 +50,19 @@ def main(cloud_event):
     local_path2 = f"/tmp/{model_file_name}"
     blob2.download_to_filename(local_path2)
 
+    if not firebase_admin._apps:
+        cred_bucket_name = 'firebaseserviceaccountjson'
+        cred_file_name = 'claws-423416-firebase-adminsdk-qjk2q-ce055d7c5b.json'
+        bucket3 = storage_client.bucket(cred_bucket_name)
+        blob3 = bucket3.blob(cred_file_name)
+        local_cred_path = '/tmp/serviceAccountKey.json'
+        blob3.download_to_filename(local_cred_path)
+
+        cred = credentials.Certificate(local_cred_path)
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': 'https://claws-423416-default-rtdb.asia-southeast1.firebasedatabase.app/'
+        })
+
     class_names = ['elephant', 'none', 'peacock', 'wildboar']
     IMAGE_SIZE = (128,128)
 
@@ -66,30 +82,28 @@ def main(cloud_event):
     with open(local_path1, "rb") as image_file:
         encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
 
-    url_ard = 'https://your-endpoint-url.com'
-    url_det = 'https://your-endpoint-url.com'
-    url_upd = 'https://your-endpoint-url.com'
+    ref = db.reference('detected_animal')
+    existing_data_ref = ref.child('animalInfo')
+    existing_data_ref.update({
+        'animal': detected_animal,
+        'image': encoded_image
+    })
+
+    url_ard = 'https://5508557a-9ed0-4432-a930-b72e251b641f.mock.pstmn.io/success'
+    url_det = 'https://0e343f79-2075-47d9-a6f8-eb71a020257a.mock.pstmn.io/success'
 
     headers = {'Content-Type': 'application/json'}
-
     data_ard = {
         "animal": detected_animal
     }
-
     data_det = {
         "animal": detected_animal,
-        "image": encoded_image
+        "image": encoded_image  
     }
-
-    data_upd = {
-        "image": encoded_image
-    }
-
     response_ard = requests.post(url_ard, headers=headers, data=json.dumps(data_ard))
     response_det = requests.post(url_det, headers=headers, data=json.dumps(data_det))
-    response_upd = requests.post(url_upd, headers=headers, data=json.dumps(data_upd))
 
-    if detected_animal != "none":
-        destination_bucket_name = 'detected-animals'
-        destination_bucket = storage_client.bucket(destination_bucket_name)
-        new_blob = bucket1.copy_blob(blob1, destination_bucket)
+    #if detected_animal != "none":
+    #    destination_bucket_name = 'detected-animals'
+    #    destination_bucket = storage_client.bucket(destination_bucket_name)
+    #    new_blob = bucket1.copy_blob(blob1, destination_bucket)

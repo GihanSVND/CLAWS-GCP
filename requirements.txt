@@ -1,0 +1,9 @@
+functions-framework==3.*
+google-cloud-storage
+pillow
+opencv-python
+numpy
+tensorflow
+matplotlib
+requests
+firebase-admin

@@ -3,7 +3,7 @@ google-cloud-storage
 pillow
 opencv-python
 numpy
-tensorflow
+tensorflow==2.15.0
 matplotlib
 requests
 firebase-admin
